@@ -15,7 +15,8 @@ pip install -r requirements.txt
 
 ## Bước 3: Khởi động Docker (4 databases)
 ```bash
-docker-compose up -d
+docker compose down
+docker compose up -d
 ```
 
 Chờ ~30s để tất cả service healthy.
