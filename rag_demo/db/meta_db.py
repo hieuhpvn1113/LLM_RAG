@@ -5,8 +5,6 @@ from config import PG_DSN
 
 
 class MetaDB:
-    """PostgreSQL client cho Meta Table (documents + chunks + search_logs)"""
-
     def __init__(self):
         self.pool = None
 
@@ -141,10 +139,7 @@ class MetaDB:
             )
 
     async def get_context(self, chunk_ids: list) -> list:
-        """
-        Lấy full context của các chunk từ PostgreSQL.
-        Bao gồm source_file, seq_no, char_start, char_end để hiển thị nguồn gốc.
-        """
+        """Lấy full context L2 chunks, JOIN với parent để có parent_title."""
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(
                 """
@@ -162,13 +157,31 @@ class MetaDB:
             )
             return [dict(r) for r in rows]
 
+    async def get_parent_chunks(self, parent_ids: list) -> list:
+        """
+        Lấy L1 chunks (chunk cha) theo danh sách parent_id.
+        Dùng để hiển thị nguồn dữ liệu theo chương thay vì theo chunk con.
+        """
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT chunk_id::TEXT, seq_no, clean_text, title,
+                       source_file, token_count, level
+                FROM chunks
+                WHERE chunk_id = ANY($1::UUID[])
+                  AND level = 1
+                ORDER BY string_to_array(seq_no, '.')::int[]
+                """,
+                parent_ids
+            )
+            return [dict(r) for r in rows]
+
     async def get_prev_next(self, chunk_id: str) -> dict:
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
                 """
                 SELECT prev_id::TEXT, next_id::TEXT
-                FROM chunks
-                WHERE chunk_id = $1::UUID
+                FROM chunks WHERE chunk_id = $1::UUID
                 """,
                 chunk_id
             )
@@ -181,8 +194,7 @@ class MetaDB:
                 SELECT chunk_id::TEXT, clean_text, doc_id::TEXT
                 FROM chunks
                 WHERE embed_status = 'pending' AND level = 2
-                ORDER BY created_at
-                LIMIT $1
+                ORDER BY created_at LIMIT $1
                 """,
                 limit
             )
