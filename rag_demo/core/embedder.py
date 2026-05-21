@@ -11,7 +11,8 @@ def _get_model() -> SentenceTransformer:
     """Lazy-load model lần đầu gọi, cache lại cho các lần sau."""
     global _model
     if _model is None:
-        _model = SentenceTransformer(EMBED_MODEL)
+        # Some multilingual models (e.g. gte-multilingual-base) require custom HF code.
+        _model = SentenceTransformer(EMBED_MODEL, trust_remote_code=True)
     return _model
 
 

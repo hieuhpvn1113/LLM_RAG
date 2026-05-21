@@ -13,7 +13,7 @@ GROQ_MODEL     = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 CHUNKING_MODE = os.getenv("CHUNKING_MODE", "llm")
 
 # ── Embedding ───────────────────────────────────────────────
-EMBED_MODEL = "intfloat/multilingual-e5-base"   # 768 dims
+EMBED_MODEL = "intfloat/multilingual-e5-large"   # 1024 dims
 
 # ── Chunking ────────────────────────────────────────────────
 CHUNK_SIZE_PARAGRAPH = 512    # token — soft limit, flush tại ranh giới câu
@@ -31,7 +31,7 @@ PG_DSN = os.getenv(
 # ── Qdrant ──────────────────────────────────────────────────
 QDRANT_URL        = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_COLLECTION = "rag_chunks"
-VECTOR_DIM        = 768
+VECTOR_DIM        = 1024
 
 # ── Elasticsearch ───────────────────────────────────────────
 ES_URL   = os.getenv("ES_URL", "http://localhost:9200")
